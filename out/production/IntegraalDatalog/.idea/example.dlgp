@@ -1,0 +1,15 @@
+@facts
+r(a).
+r(b).
+r(c).
+s(c).
+s(d).
+u(c, c).
+
+@rules
+s(X) :- r(X).
+t(X) :- s(X).
+
+@queries
+?(Y) :- t(Y).
+?(Y) :- s(Y).
