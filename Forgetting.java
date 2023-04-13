@@ -1,4 +1,9 @@
-import fr.lirmm.graphik.graal.api.core.*;
+import fr.lirmm.graphik.graal.api.core.ConjunctiveQuery;
+import fr.lirmm.graphik.graal.api.core.Rule;
+import fr.lirmm.graphik.graal.api.core.RuleSet;
+import fr.lirmm.graphik.graal.api.core.Atom;
+import fr.lirmm.graphik.graal.api.core.Substitution;
+import fr.lirmm.graphik.graal.api.core.InMemoryAtomSet;
 import fr.lirmm.graphik.graal.core.DefaultConjunctiveQuery;
 import fr.lirmm.graphik.graal.core.compilation.NoCompilation;
 import fr.lirmm.graphik.graal.core.ruleset.IndexedByHeadPredicatesRuleSet;
@@ -16,7 +21,7 @@ public class Forgetting {
            RuleSet rProduit = new IndexedByHeadPredicatesRuleSet();
            for (Rule r1: rNouvelles) {
                for (Rule r0 : rInit) {
-                   ConjunctiveQuery tete = new DefaultConjunctiveQuery(r0.getHead());
+                   ConjunctiveQuery tete = new DefaultConjunctiveQuery(r0.getHead());// probablement une inversion entre r1 et r0
                    LinkedList<QueryUnifier> unificateurs = UnifierUtils.getSinglePieceUnifiersAHR(tete, (AtomicHeadRule) r1, NoCompilation.instance());
                    for (QueryUnifier unificateur : unificateurs) {
                        Substitution subst = unificateur.getAssociatedSubstitution();
