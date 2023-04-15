@@ -7,7 +7,7 @@ import fr.boreal.model.query.api.FOQuery;
 import fr.boreal.model.query.impl.AtomicFOQueryImpl;
 import fr.boreal.model.rule.impl.FORuleImpl;
 
-public class TestForgetting {
+public class TestUnfoldAtom {
     public static void main (String... args){
         PredicateImpl p = new PredicateImpl("p",2);
         PredicateImpl q = new PredicateImpl("q",3);
