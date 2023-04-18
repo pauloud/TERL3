@@ -3,7 +3,6 @@ import fr.boreal.model.logicalElements.impl.AtomImpl;
 import fr.boreal.model.logicalElements.impl.ConstantImpl;
 import fr.boreal.model.logicalElements.impl.PredicateImpl;
 import fr.boreal.model.logicalElements.impl.VariableImpl;
-import fr.boreal.model.query.api.FOQuery;
 import fr.boreal.model.query.impl.AtomicFOQueryImpl;
 import fr.boreal.model.rule.impl.FORuleImpl;
 
@@ -22,10 +21,10 @@ public class TestUnfoldAtom {
         FORuleImpl r1 = new FORuleImpl(new AtomicFOQueryImpl(new AtomicFOImpl(qYXa),qYXa.getVariables(),null)
                 , new AtomicFOImpl(pYX));
 
-        System.out.println(ForgettingIntegraal.unfoldAtom(pXa,r1));
-        System.out.println(ForgettingIntegraal.unfoldAtom(pYX,r1));
-        System.out.println(ForgettingIntegraal.unfoldAtom(pYa,r1));
-        System.out.println(ForgettingIntegraal.unfoldAtom(qYXa,r1));
+        System.out.println(Forgetting.unfoldAtom(pXa,r1));
+        System.out.println(Forgetting.unfoldAtom(pYX,r1));
+        System.out.println(Forgetting.unfoldAtom(pYa,r1));
+        System.out.println(Forgetting.unfoldAtom(qYXa,r1));
 
     }
 }

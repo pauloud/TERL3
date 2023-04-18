@@ -10,9 +10,12 @@ import fr.boreal.model.rule.api.FORule;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 
-public class TestFermeture {
+
+public class TestForgetting {
     public static void main(String[] args) throws Exception {
 
         ///////////////
@@ -40,7 +43,7 @@ public class TestFermeture {
             while (dlgp_parseur.hasNext()) {
                 try {
                     Object result = dlgp_parseur.next();
-                     if (result instanceof FORule) {
+                    if (result instanceof FORule) {
                         rules.add((FORule)result);
                     }
                 } catch (ParseException e) {
@@ -57,11 +60,12 @@ public class TestFermeture {
 
         System.out.println("RuleBase : ");
         System.out.println(rb);
-        RuleBase rb1 = Forgetting.rbSaturation(rb);
-        System.out.println("Saturated RuleBase :");
+        Collection<String> toForget = Arrays.asList("p", "t");
+        RuleBase rb1 = Forgetting.forget(rb, new HashSet<>(toForget));
+        System.out.println("After Forgetting of " + toForget + " :");
         System.out.println(rb1);
         System.out.println("And after compiling :");
-        System.out.println(Forgetting.compileRuleBase(rb));
+        System.out.println(Forgetting.compileRuleBase(rb1));
 
     }
 }
