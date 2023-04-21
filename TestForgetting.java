@@ -9,10 +9,7 @@ import fr.boreal.model.logicalElements.factory.impl.SameObjectTermFactory;
 import fr.boreal.model.rule.api.FORule;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 
 public class TestForgetting {
@@ -60,7 +57,11 @@ public class TestForgetting {
 
         System.out.println("RuleBase : ");
         System.out.println(rb);
-        Collection<String> toForget = Arrays.asList("p", "t");
+        Scanner predicateScanner = new Scanner (new File(args.length >= 1 ? args[0] : "toForget"));
+        ArrayList<String> toForget = new ArrayList<>();
+        while (predicateScanner.hasNextLine()){
+            toForget.add(predicateScanner.nextLine().trim());
+        }
         RuleBase rb1 = Forgetting.forget(rb, new HashSet<>(toForget));
         System.out.println("After Forgetting of " + toForget + " :");
         System.out.println(rb1);
