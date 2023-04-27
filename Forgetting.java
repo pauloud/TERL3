@@ -16,7 +16,6 @@ import fr.boreal.model.query.impl.AtomicFOQueryImpl;
 import fr.boreal.model.rule.impl.FORuleImpl;
 import fr.boreal.queryEvaluation.atomic.AtomicFOQueryEvaluator;
 import fr.boreal.storage.inmemory.DefaultInMemoryAtomSet;
-import fr.lirmm.boreal.graal.unifier.QueryUnifierAlgorithm;
 import fr.boreal.model.rule.api.FORule;
 import fr.boreal.backward_chaining.pure.PureRewriterOptimized;
 
