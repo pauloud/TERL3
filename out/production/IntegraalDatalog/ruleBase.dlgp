@@ -1,0 +1,6 @@
+@rules
+q(X,Y,Z):- v(Y,X,Z).
+t(X) :- v(X,b,X).
+p(Y,X) :- q(Y,X,a).
+s(X,Y) :- t(Y),p(X,X).
+u(X,Z) :- q(X,X,Z).
