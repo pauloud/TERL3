@@ -1,5 +1,6 @@
 import fr.boreal.io.api.ParseException;
 import fr.boreal.io.dlgp.impl.builtin.DlgpParser;
+import fr.boreal.io.dlgp.impl.builtin.DlgpWriter;
 import fr.boreal.model.kb.api.RuleBase;
 import fr.boreal.model.kb.impl.RuleBaseImpl;
 import fr.boreal.model.logicalElements.factory.api.PredicateFactory;
@@ -63,10 +64,12 @@ public class TestForgetting {
             toForget.add(predicateScanner.nextLine().trim());
         }
         RuleBase rb1 = Forgetting.forget(rb, new HashSet<>(toForget));
+        DlgpWriter writer = new DlgpWriter();
         System.out.println("After Forgetting of " + toForget + " :");
-        System.out.println(rb1);
-        System.out.println("And after compiling :");
-        System.out.println(Forgetting.compileRuleBase(rb1));
-
+        writer.write(rb1);
+        //quand writer a commencé à utiliser la sortie standard on ne peut plus afficher avec System.out.println
+        writer.write("And after compiling :\n");
+        writer.write(Forgetting.compileRuleBase(rb1));
+        writer.close();
     }
 }
