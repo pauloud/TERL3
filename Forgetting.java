@@ -90,16 +90,44 @@ public class Forgetting {
         )));
 
     }
+    private static boolean unwantedSignatureF (FOFormula<Atom> f, Set<String> toForget)
+    { return f.getPredicates().stream().anyMatch(p -> toForget.contains(p.getLabel())); }
+    private static boolean unwantedSignatureR (FORule r, Set<String> toForget)
+    { return unwantedSignatureF (r.getHead(),toForget) || unwantedSignatureF(r.getBody().getFormula(),toForget) ;}
+    public static RuleBase forget(RuleBase rb, Set<String> toForget){
 
-    public static RuleBase forget(RuleBase rb, Set<String> signature){
-        Predicate<FOFormula<Atom>> unwantedSignatureF = f -> f.getPredicates().stream().anyMatch(p -> signature.contains(p.getLabel()));
-        Predicate<FORule> unwantedSignatureR = r -> unwantedSignatureF.test(r.getHead())
-                || unwantedSignatureF.test(r.getBody().getFormula());
         Stream<FORule> toRewrite = rb.getRules().stream();
         Stream<FORule> newRules = rbClosingWith(rb,toRewrite);
-        return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(Predicate.not(unwantedSignatureR)).toList());
+        return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(r -> ! unwantedSignatureR(r,toForget)).toList());
 
     }
+    public static RuleBase forgetAndCompile (RuleBase rb, Set<String> toForget,boolean compileInitial){
+        RuleBase rbC = compileInitial ? compileRuleBase(rb) : rb;
+        if (toForget.isEmpty()){
+            return rbC;
+        }
+       return forgetAndCompile(new RuleBaseImpl(new ArrayList<>()),new RuleBaseImpl(new ArrayList<>()),rbC.getRules(),toForget);
+
+
+
+    }
+    /* En cours de codage private static RuleBase forgetAndCompile (RuleBase greenB, RuleBase redB,Collection<FORule> newRules,Set<String> toForget){
+        ArrayList<FORule> green = new ArrayList<>();
+        ArrayList<FORule> red = new ArrayList<>();
+        for (FORule r : newRules){
+            if (unwantedSignatureR(r,toForget))
+                red.add(r);
+            else
+                green.add(r);
+        }
+        if (red.isEmpty())
+            if (green.isEmpty())
+                return greenB;
+            if (redB.getRules().isEmpty()) // cas ou
+                return new RuleBaseImpl(newRules);
+
+        return null;
+    }*/
 
 
 }
