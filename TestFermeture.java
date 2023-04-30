@@ -31,8 +31,8 @@ public class TestFermeture {
 
 
         for(String filepath : new String[] {
-                "ruleBase.dlgp"
-                // available at https://notes.inria.fr/Rc2uiwUfQoSxb06-Ex4Jpw
+                args.length > 0 ? args[0] : "ruleBase.dlgp"
+
         }) {
 
             File file = new File(filepath);
@@ -57,7 +57,7 @@ public class TestFermeture {
 
         System.out.println("RuleBase : ");
         System.out.println(rb);
-        RuleBase rb1 = Forgetting.rbSaturation(rb);
+        RuleBase rb1 = Forgetting.rbClosing(rb);
         System.out.println("Saturated RuleBase :");
         System.out.println(rb1);
         System.out.println("And after compiling :");

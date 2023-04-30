@@ -1,0 +1,3 @@
+@rules
+p(X,Y,Z) :- q(Y,X,b),r(X,Y,Z).
+q(X,a,Y):- s(X,Y,Z).

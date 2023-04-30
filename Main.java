@@ -13,9 +13,9 @@ import java.io.File;
 import java.util.*;
 
 
-public class TestForgetting {
-    public static void main(String[] args) throws Exception {
+public class Main {
 
+    public static void reply (String rulesPath, String toForgetPath, String outputPath) throws Exception{
         ///////////////
         // Factories //
         ///////////////
@@ -32,8 +32,8 @@ public class TestForgetting {
 
 
         for(String filepath : new String[] {
-                "ruleBase.dlgp"
-                // available at https://notes.inria.fr/Rc2uiwUfQoSxb06-Ex4Jpw
+                rulesPath != null ? rulesPath : "ruleBase.dlgp"
+
         }) {
 
             File file = new File(filepath);
@@ -58,18 +58,33 @@ public class TestForgetting {
 
         System.out.println("RuleBase : ");
         System.out.println(rb);
-        Scanner predicateScanner = new Scanner (new File(args.length >= 1 ? args[0] : "toForget"));
+        Scanner predicateScanner = new Scanner (new File(toForgetPath != null ? toForgetPath : "toForget"));
         ArrayList<String> toForget = new ArrayList<>();
         while (predicateScanner.hasNextLine()){
             toForget.add(predicateScanner.nextLine().trim());
         }
         RuleBase rb1 = Forgetting.forget(rb, new HashSet<>(toForget));
-        DlgpWriter writer = new DlgpWriter();
+        DlgpWriter writer = outputPath != null ? new DlgpWriter(outputPath) : new DlgpWriter();
         System.out.println("After Forgetting of " + toForget + " :");
         writer.write(rb1);
         //quand writer a commencé à utiliser la sortie standard on ne peut plus afficher avec System.out.println
         writer.write("And after compiling :\n");
         writer.write(Forgetting.compileRuleBase(rb1));
         writer.close();
+    }
+    public static void main(String[] args) throws Exception {
+        String rulesPath = args.length > 0 ? args[0] : null;
+        String toForgetPath = args.length == 2 ? args[1] :null;
+        String outputPath = args.length == 3 ? args[2] : null;
+        for (int i = 1 ; i < args.length; i++){
+            if (args[i] == "-f" && args.length > i+1)
+                toForgetPath = args[i+1];
+            if (args[i] == "-o" && args.length > i+1)
+                outputPath= args[i+1];
+            
+        }
+        reply(rulesPath,toForgetPath,outputPath);
+
+
     }
 }
