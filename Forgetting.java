@@ -101,7 +101,7 @@ public class Forgetting {
         return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(r -> ! unwantedSignatureR(r,toForget)).toList());
 
     }
-    public static RuleBase forgetAndCompile (RuleBase rb, Set<String> toForget,boolean compileInitial){
+    /*public static RuleBase forgetAndCompile (RuleBase rb, Set<String> toForget,boolean compileInitial){
         RuleBase rbC = compileInitial ? compileRuleBase(rb) : rb;
         if (toForget.isEmpty()){
             return rbC;
@@ -110,7 +110,7 @@ public class Forgetting {
 
 
 
-    }
+    }*/
     /* En cours de codage private static RuleBase forgetAndCompile (RuleBase greenB, RuleBase redB,Collection<FORule> newRules,Set<String> toForget){
         ArrayList<FORule> green = new ArrayList<>();
         ArrayList<FORule> red = new ArrayList<>();
