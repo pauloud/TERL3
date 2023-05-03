@@ -19,19 +19,34 @@ import fr.boreal.queryEvaluation.generic.GenericFOQueryEvaluator;
 import fr.boreal.storage.inmemory.DefaultInMemoryAtomSet;
 import fr.boreal.model.rule.api.FORule;
 import fr.boreal.backward_chaining.pure.PureRewriterOptimized;
+import org.apache.commons.lang3.tuple.Pair;
 
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+ class GreenRed {
+     RuleBase green;
+     RuleBase red;
+
+     GreenRed(Stream <FORule> rules, Set<String> toForget){
+         Collection<FORule> green = new ArrayList<>();
+         Collection<FORule> red = new ArrayList<>();
+         rules.forEach(r -> {if (Forgetting.unwantedSignatureR(r,toForget)){red.add(r);}
+         else {green.add(r);}});
+         this.green = new RuleBaseImpl (green);
+         this.red = new RuleBaseImpl (red);
+     }
+    
+}
 public class Forgetting {
 
     public static RuleBase compileRuleBase(RuleBase rb){
-        return compileRuleLists(new ArrayList<> (rb.getRules()),new ArrayList<>());
+        return compileRuleList(new ArrayList<> (rb.getRules()),new ArrayList<>());
     }
 
-    private static RuleBase compileRuleLists (ArrayList<FORule> toCompile, ArrayList<FORule> compiled){
+    private static RuleBase compileRuleList (ArrayList<FORule> toCompile, ArrayList<FORule> compiled){
         if (toCompile.isEmpty()){
             return new RuleBaseImpl(compiled); //fin des appels récursifs lorsqu'on a traité toutes les règles
         }
@@ -62,7 +77,7 @@ public class Forgetting {
             pour toute requête obtenue par réécriture de q*/
             compiled.add(r);//on ajoute alors r dans les règles que l'on garde
 
-        return compileRuleLists(toCompile,compiled);//on teste ensuite les autres règles de la base de règle initiale
+        return compileRuleList(toCompile,compiled);//on teste ensuite les autres règles de la base de règle initiale
 
     }
 
@@ -90,9 +105,20 @@ public class Forgetting {
         )));
 
     }
-    private static boolean unwantedSignatureF (FOFormula<Atom> f, Set<String> toForget)
+    private static Stream<FORule> rbClosingComplementWith(RuleBase rewriter, Stream<FORule> toRewrite){
+        PureRewriterOptimized rw = new PureRewriterOptimized();
+        return toRewrite.flatMap(r -> rw.rewrite(r.getBody(),rewriter)/* chaque règle, on
+            traite chaque réécriture possible du corps*/
+                .stream().filter(newBody -> ! newBody.equals(r.getBody())).map(newBody -> (FORule) new FORuleImpl(removeSubstitution(newBody)/*
+                pour chaque réécriture du corps obtenu on fabrique une nouvelle règle*/
+                        ,applySubstitution(r.getHead(), newBody)
+
+                )));
+
+    }
+ private static boolean unwantedSignatureF (FOFormula<Atom> f, Set<String> toForget)
     { return f.getPredicates().stream().anyMatch(p -> toForget.contains(p.getLabel())); }
-    private static boolean unwantedSignatureR (FORule r, Set<String> toForget)
+    static boolean unwantedSignatureR (FORule r, Set<String> toForget)
     { return unwantedSignatureF (r.getHead(),toForget) || unwantedSignatureF(r.getBody().getFormula(),toForget) ;}
     public static RuleBase forget(RuleBase rb, Set<String> toForget){
 
@@ -101,32 +127,33 @@ public class Forgetting {
         return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(r -> ! unwantedSignatureR(r,toForget)).toList());
 
     }
-    public static RuleBase forgetAndCompile (RuleBase rb, Set<String> toForget,boolean compileInitial){
-        RuleBase rbC = compileInitial ? compileRuleBase(rb) : rb;
-        if (toForget.isEmpty()){
-            return rbC;
+
+
+
+
+    /*public static RuleBase forgetAndCompile (RuleBase ruleBase, Set<String> toForget,boolean compileInitial) {
+         RuleBase rb = compileInitial ? compileRuleBase(ruleBase) : ruleBase;
+         Collection<FORule> red = new ArrayList<>();
+         Collection<FORule> green = new ArrayList<>();
+         Collection<FORule> newRules = rb.getRules();
+         Collection<FORule> newGreen = new ArrayList<>();
+         Collection<FORule> newRed = new ArrayList<>();
+
+
+        while (! newRules.isEmpty()){
+            newGreen.clear();
+            newRed.clear();
+            newRules.stream().forEach(r -> {if (unwantedSignatureR(r,toForget)){newRed.add(r);}
+            else {newGreen.add(r)}});
+            newRules.clear();
+            for (FORule redR : newRed){
+                rbClosingWith(new RuleBaseImpl(redR), Stream.of(redR)).forEach(r1 -> if (r1 != redR))
+            }
+
+
+
         }
-       return forgetAndCompile(new RuleBaseImpl(new ArrayList<>()),new RuleBaseImpl(new ArrayList<>()),rbC.getRules(),toForget);
-
-
-
-    }
-    /* En cours de codage private static RuleBase forgetAndCompile (RuleBase greenB, RuleBase redB,Collection<FORule> newRules,Set<String> toForget){
-        ArrayList<FORule> green = new ArrayList<>();
-        ArrayList<FORule> red = new ArrayList<>();
-        for (FORule r : newRules){
-            if (unwantedSignatureR(r,toForget))
-                red.add(r);
-            else
-                green.add(r);
-        }
-        if (red.isEmpty())
-            if (green.isEmpty())
-                return greenB;
-            if (redB.getRules().isEmpty()) // cas ou
-                return new RuleBaseImpl(newRules);
-
-        return null;
+        return new RuleBaseImpl (green);
     }*/
 
 
