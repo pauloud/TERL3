@@ -56,34 +56,26 @@ public class Main {
         RuleBase rb = new RuleBaseImpl(rules);
 
 
-        System.out.println("RuleBase : ");
-        System.out.println(rb);
+        DlgpWriter writer = outputPath != null ? new DlgpWriter(outputPath) : new DlgpWriter();
+       writer.write("RuleBase : \n");
+        writer.write(rb);
         Scanner predicateScanner = new Scanner (new File(toForgetPath != null ? toForgetPath : "toForget"));
         ArrayList<String> toForget = new ArrayList<>();
         while (predicateScanner.hasNextLine()){
             toForget.add(predicateScanner.nextLine().trim());
         }
         RuleBase rb1 = Forgetting.forget(rb, new HashSet<>(toForget));
-        DlgpWriter writer = outputPath != null ? new DlgpWriter(outputPath) : new DlgpWriter();
-        System.out.println("After Forgetting of " + toForget + " :");
+        writer.write("After Forgetting of " + toForget + " :\n");
         writer.write(rb1);
         //quand writer a commencé à utiliser la sortie standard on ne peut plus afficher avec System.out.println
         writer.write("And after compiling :\n");
         writer.write(Forgetting.compileRuleBase(rb1));
+        writer.write ("Original rulebase after optimized forgetting\n");
+        writer.write(Forgetting.forgetAndCompile(rb,new HashSet <> (toForget)));
         writer.close();
     }
     public static void main(String[] args) throws Exception {
-        String rulesPath = args.length > 0 ? args[0] : null;
-        String toForgetPath = args.length == 2 ? args[1] :null;
-        String outputPath = args.length == 3 ? args[2] : null;
-        for (int i = 1 ; i < args.length; i++){
-            if (args[i] == "-f" && args.length > i+1)
-                toForgetPath = args[i+1];
-            if (args[i] == "-o" && args.length > i+1)
-                outputPath= args[i+1];
-            
-        }
-        reply(rulesPath,toForgetPath,outputPath);
+        reply(ParseArguments.parseRulesPath(args),ParseArguments.parseToForgetPath(args),ParseArguments.parseOutputPath(args));
 
 
     }

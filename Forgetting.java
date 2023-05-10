@@ -20,13 +20,15 @@ import fr.boreal.storage.inmemory.DefaultInMemoryAtomSet;
 import fr.boreal.model.rule.api.FORule;
 import fr.boreal.backward_chaining.pure.PureRewriterOptimized;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
- class GreenRed {
+ /*class GreenRed {
      RuleBase green;
      RuleBase red;
 
@@ -39,12 +41,13 @@ import java.util.stream.Stream;
          this.red = new RuleBaseImpl (red);
      }
     
-}
+}*/
 public class Forgetting {
 
     public static RuleBase compileRuleBase(RuleBase rb){
         return compileRuleList(new ArrayList<> (rb.getRules()),new ArrayList<>());
     }
+
 
     private static RuleBase compileRuleList (ArrayList<FORule> toCompile, ArrayList<FORule> compiled){
         if (toCompile.isEmpty()){
@@ -81,20 +84,23 @@ public class Forgetting {
 
     }
 
-    public static RuleBase rbClosing(RuleBase rb){
-        return new RuleBaseImpl (rbClosingWith(rb,rb.getRules().stream()).toList());
+    @Contract("_ -> new")
+    public static @NotNull RuleBase rbUnfolding(RuleBase rb){
+        return new RuleBaseImpl (rbUnfoldingWith(rb,rb.getRules().stream()).toList());
 
     }
-    private static FOQueryConjunction removeSubstitution (FOQuery query){
+    @Contract("_ -> new")
+    private static @NotNull FOQueryConjunction removeSubstitution (@NotNull FOQuery query){
         return new FOQueryConjunctionImpl((FOFormulaConjunction<Atom>) query.getFormula(),query.getAnswerVariables(),null);
     }
-    private static FOFormula<Atom> applySubstitution (FOFormula<Atom> head, FOQuery body){
+    @Contract("_, _ -> new")
+    private static @NotNull FOFormula<Atom> applySubstitution (@NotNull FOFormula<Atom> head, @NotNull FOQuery body){
         return new AtomicFOImpl<>(body.getInitialSubstitution().createImageOf(/*
                 il faut réécrire la tête au cas où la réécriture du corps ait nécessité des unifications*/
                head.flatten().iterator().next()));//on donne à réécrire l'unique atome de la tête de r
 
     }
-    private static Stream<FORule> rbClosingWith(RuleBase rewriter, Stream<FORule> toRewrite){
+    private static Stream<FORule> rbUnfoldingWith(RuleBase rewriter, @NotNull Stream<FORule> toRewrite){
         PureRewriterOptimized rw = new PureRewriterOptimized();
         return toRewrite.flatMap(r -> rw.rewrite(r.getBody(),rewriter)/* chaque règle, on
             traite chaque réécriture possible du corps*/
@@ -105,56 +111,56 @@ public class Forgetting {
         )));
 
     }
-    private static Stream<FORule> rbClosingComplementWith(RuleBase rewriter, Stream<FORule> toRewrite){
+    public static Stream<FORule> rbUnfoldingComplementWith(RuleBase rewriter, @NotNull Stream<FORule> toRewrite, Set<String> toForget){
         PureRewriterOptimized rw = new PureRewriterOptimized();
         return toRewrite.flatMap(r -> rw.rewrite(r.getBody(),rewriter)/* chaque règle, on
             traite chaque réécriture possible du corps*/
-                .stream().filter(newBody -> ! newBody.equals(r.getBody())).map(newBody -> (FORule) new FORuleImpl(removeSubstitution(newBody)/*
+                .stream().filter(newBody -> ! (newBody.equals(r.getBody()) || ! (toForget != null) && unwantedSignatureF(r.getBody().getFormula(),toForget))).map(newBody -> (FORule) new FORuleImpl(removeSubstitution(newBody)/*
                 pour chaque réécriture du corps obtenu on fabrique une nouvelle règle*/
                         ,applySubstitution(r.getHead(), newBody)
 
                 )));
 
     }
- private static boolean unwantedSignatureF (FOFormula<Atom> f, Set<String> toForget)
+ private static boolean unwantedSignatureF (@NotNull FOFormula<Atom> f, Set<String> toForget)
     { return f.getPredicates().stream().anyMatch(p -> toForget.contains(p.getLabel())); }
-    static boolean unwantedSignatureR (FORule r, Set<String> toForget)
+    static boolean unwantedSignatureR (@NotNull FORule r, Set<String> toForget)
     { return unwantedSignatureF (r.getHead(),toForget) || unwantedSignatureF(r.getBody().getFormula(),toForget) ;}
-    public static RuleBase forget(RuleBase rb, Set<String> toForget){
+    public static @NotNull RuleBase forget(@NotNull RuleBase rb, Set<String> toForget){
 
         Stream<FORule> toRewrite = rb.getRules().stream();
-        Stream<FORule> newRules = rbClosingWith(rb,toRewrite);
+        Stream<FORule> newRules = rbUnfoldingWith(rb,toRewrite);
         return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(r -> ! unwantedSignatureR(r,toForget)).toList());
 
     }
 
+    public static RuleBase forgetAndCompile(RuleBase rb,Set<String> toForget){
+        ArrayList <FORule> toKeep= new ArrayList<>();
+        ArrayList<FORule>  toRewrite = new ArrayList<>();
+        ArrayList<FORule> forRewriting = new ArrayList<>();
+        for (FORule r : rb.getRules()){
+            if (unwantedSignatureF(r.getHead(),toForget)){
+                forRewriting.add(r);
 
-
-
-    /*public static RuleBase forgetAndCompile (RuleBase ruleBase, Set<String> toForget,boolean compileInitial) {
-         RuleBase rb = compileInitial ? compileRuleBase(ruleBase) : ruleBase;
-         Collection<FORule> red = new ArrayList<>();
-         Collection<FORule> green = new ArrayList<>();
-         Collection<FORule> newRules = rb.getRules();
-         Collection<FORule> newGreen = new ArrayList<>();
-         Collection<FORule> newRed = new ArrayList<>();
-
-
-        while (! newRules.isEmpty()){
-            newGreen.clear();
-            newRed.clear();
-            newRules.stream().forEach(r -> {if (unwantedSignatureR(r,toForget)){newRed.add(r);}
-            else {newGreen.add(r)}});
-            newRules.clear();
-            for (FORule redR : newRed){
-                rbClosingWith(new RuleBaseImpl(redR), Stream.of(redR)).forEach(r1 -> if (r1 != redR))
             }
-
-
-
+            else if (unwantedSignatureF(r.getBody().getFormula(),toForget)) {
+                toRewrite.add(r);
+                forRewriting.add(r);
+            }
+            else {
+                toKeep.add(r);
+            }
         }
-        return new RuleBaseImpl (green);
-    }*/
+        Stream<FORule> newRules = rbUnfoldingWith(new RuleBaseImpl(forRewriting),toRewrite.stream()).filter(
+                r -> ! unwantedSignatureF(r.getBody().getFormula(),toForget)
+        );
+
+        return new RuleBaseImpl(Stream.concat(toKeep.stream(), newRules).toList());
+
+
+    }
+
+
 
 
 }

@@ -57,7 +57,7 @@ public class TestFermeture {
 
         System.out.println("RuleBase : ");
         System.out.println(rb);
-        RuleBase rb1 = Forgetting.rbClosing(rb);
+        RuleBase rb1 = Forgetting.rbUnfolding(rb);
         System.out.println("Saturated RuleBase :");
         System.out.println(rb1);
         System.out.println("And after compiling :");
