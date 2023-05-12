@@ -130,7 +130,7 @@ public class Forgetting {
 
         Stream<FORule> toRewrite = rb.getRules().stream();
         Stream<FORule> newRules = rbUnfoldingWith(rb,toRewrite);
-        return new RuleBaseImpl(Stream.concat(newRules,rb.getRules().stream()).filter(r -> ! unwantedSignatureR(r,toForget)).toList());
+        return new RuleBaseImpl(newRules.filter(r -> ! unwantedSignatureR(r,toForget)).toList());
 
     }
 

@@ -1,5 +1,6 @@
 import fr.boreal.io.api.ParseException;
 import fr.boreal.io.dlgp.impl.builtin.DlgpParser;
+import fr.boreal.io.dlgp.impl.builtin.DlgpWriter;
 import fr.boreal.model.kb.api.RuleBase;
 import fr.boreal.model.kb.impl.RuleBaseImpl;
 import fr.boreal.model.logicalElements.factory.api.PredicateFactory;
@@ -59,9 +60,11 @@ public class TestFermeture {
         System.out.println(rb);
         RuleBase rb1 = Forgetting.rbUnfolding(rb);
         System.out.println("Saturated RuleBase :");
-        System.out.println(rb1);
-        System.out.println("And after compiling :");
-        System.out.println(Forgetting.compileRuleBase(rb));
+        DlgpWriter writer = new DlgpWriter();
+        writer.write(rb1);
+        writer.write("And after compiling :\n");
+        writer.write(Forgetting.compileRuleBase(rb));
+        writer.close();
 
     }
 }
