@@ -1,0 +1,6 @@
+@rules
+peutCourir(An) :- animal(An),pattes (An). %r1
+peutMarcher(X) :- peutCourir(X).%r2
+veutAttraper(A,X) :- animal(A),veutManger(A,X). %r3
+courtApres(X,Y) :- peutCourir(X),peutCourir(Y),
+    veutAttraper(X,Y). %r4
